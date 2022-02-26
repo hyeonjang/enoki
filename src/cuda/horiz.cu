@@ -31,7 +31,7 @@ __global__ void arange(uint32_t n, uint32_t *out) {
         out[i] = i;
 }
 
-
+// should be more optimized
 ENOKI_EXPORT
 void cuda_partition(size_t size, const void **ptrs_, void ***ptrs_unique_out,
                     uint32_t **counts_out, uint32_t ***perm_out) {
@@ -96,7 +96,7 @@ void cuda_partition(size_t size, const void **ptrs_, void ***ptrs_unique_out,
         counts_h = (uint32_t *) cuda_host_malloc(sizeof(uint32_t) * (num_runs_h + 1));
         ptrs_unique_h = (void **) cuda_host_malloc(sizeof(void *) * num_runs_h);
 
-        cuda_check(cudaMemcpyAsync(counts_h,      counts,      num_runs_h * sizeof(uint32_t), cudaMemcpyDeviceToHost));
+        cuda_check(cudaMemcpyAsync(counts_h,      counts,      (num_runs_h+1) * sizeof(uint32_t), cudaMemcpyDeviceToHost));
         cuda_check(cudaMemcpyAsync(ptrs_unique_h, ptrs_unique, num_runs_h * sizeof(void *),   cudaMemcpyDeviceToHost));
         cuda_check(cudaDeviceSynchronize());
     }
