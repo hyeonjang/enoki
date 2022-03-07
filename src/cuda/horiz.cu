@@ -49,7 +49,8 @@ void cuda_partition(size_t size, const void **ptrs_, void ***ptrs_unique_out,
     uintptr_t *ptrs        = (uintptr_t *) ptrs_,
               *ptrs_sorted = (uintptr_t *) cuda_malloc(size * sizeof(uintptr_t));
 
-    arange<<<256, 256>>>((uint32_t) size, perm);
+    // arange<<<256, 256>>>((uint32_t) size, perm);
+    arange<<<512, 512>>>((uint32_t) size, perm);
 
     // Sort the key array
     cuda_check(cub::DeviceRadixSort::SortPairs(

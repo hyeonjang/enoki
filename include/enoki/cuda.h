@@ -233,15 +233,27 @@ struct CUDAArray : ArrayBase<value_t<Value>, CUDAArray<Value>> {
         }
     }
 
-    template <typename T> CUDAArray(const CUDAArray<T> &v) {
+    template <typename T>
+    CUDAArray(const CUDAArray<T> &v) {
         const char *op;
 
-        if (std::is_floating_point_v<T> && std::is_integral_v<Value>)
+        if constexpr (std::is_floating_point_v<T> && std::is_integral_v<Value>) 
             op = "cvt.rzi.$t1.$t2 $r1, $r2";
-        else if (std::is_integral_v<T> && std::is_floating_point_v<Value>)
+        else if constexpr (std::is_integral_v<T> && std::is_floating_point_v<Value>)
             op = "cvt.rn.$t1.$t2 $r1, $r2";
-        else
+        else if constexpr (std::is_floating_point_v<T> && std::is_floating_point_v<Value>) {
             op = "cvt.$t1.$t2 $r1, $r2";
+
+            if constexpr (std::is_same_v<double, T>) {
+                op = "cvt.rn.$t1.$t2 $r1, $r2";
+            }
+        }
+        else if constexpr (std::is_integral_v<T> && std::is_integral_v<Value>) {
+            op = "cvt.$t1.$t2 $r1, $r2";
+        }
+        else {
+            op = "cvt.$t1.$t2 $r1, $r2";
+        }
 
         m_index = cuda_trace_append(Type, op, v.index_());
     }
