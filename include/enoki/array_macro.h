@@ -238,6 +238,30 @@
 #define ENOKI_BASE_FIELDS(...) __VA_ARGS__
 #define ENOKI_DERIVED_FIELDS(...) __VA_ARGS__
 
+#define ENOKI_DERIVED_STRUCT_NONE(Struct, Base, BaseFields)                    \
+    Struct() = default;                                                        \
+    template <ENOKI_MAP_TEMPLATE_FWD(BaseFields)>                              \
+    ENOKI_INLINE Struct(ENOKI_MAP_EXPR_DECL_FWD(BaseFields))                   \
+        : Base(ENOKI_MAP_EXPR_BASE_FWD(BaseFields)){}                          \
+    template <typename... Args>                                                \
+    ENOKI_INLINE Struct(const Struct<Args...> &value)                          \
+        : Base(value) { }                                                      \
+    template <typename... Args>                                                \
+    ENOKI_INLINE Struct(Struct<Args...> &&value)                               \
+        : Base(std::move(value)) { }                                           \
+    template <typename... Args>                                                \
+    ENOKI_INLINE Struct &operator=(const Struct<Args...> &value) {             \
+        Base::operator=(value);                                                \
+        return *this;                                                          \
+    }                                                                          \
+    template <typename... Args>                                                \
+    ENOKI_INLINE Struct &operator=(Struct<Args...> &&value) {                  \
+        Base::operator=(std::move(value));                                     \
+        return *this;                                                          \
+    }                                                                          \
+    template <typename Mask, enoki::enable_if_mask_t<Mask> = 0>                \
+    auto operator[](const Mask &m) { return masked(*this, m); }                \
+
 #define ENOKI_DERIVED_STRUCT(Struct, Base, BaseFields, StructFields)           \
     Struct() = default;                                                        \
     template <ENOKI_MAP_TEMPLATE_FWD(BaseFields),                              \
@@ -267,7 +291,6 @@
     }                                                                          \
     template <typename Mask, enoki::enable_if_mask_t<Mask> = 0>                \
     auto operator[](const Mask &m) { return masked(*this, m); }                \
-
 
 #define ENOKI_STRUCT_SUPPORT(Struct, ...)                                      \
     NAMESPACE_BEGIN(enoki)                                                     \
